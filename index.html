@@ -1,1 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Timer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        #earnings {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Money Timer</h1>
+    <div id="earnings">Earned: €0.00</div>
+    <button onclick="startTimer()">Start</button>
+    <button onclick="stopTimer()">Stop</button>
+    <button onclick="resetTimer()">Reset</button>
 
+    <script>
+        let totalYearlyEarnings = 1900; // Total money earned for the month (€)
+        let workHours = 9; // Total working hours per day
+        let secondsPerDay = workHours * 60 * 60; // 9 hours = 32,400 seconds
+        let moneyPerSecond; // Money earned per second, to be calculated
+
+        let running = false;
+        let startTime = 0;
+        let earnedMoney = 0;
+        let timerInterval;
+
+        function getWorkingDaysInMonth(month, year) {
+            let startDate = new Date(year, month, 1);
+            let endDate = new Date(year, month + 1, 0); // Last day of the month
+            let workingDays = 0;
+
+            for (let day = startDate; day <= endDate; day.setDate(day.getDate() + 1)) {
+                // Check if the day is a weekday (Monday to Friday)
+                if (day.getDay() !== 0 && day.getDay() !== 6) {
+                    workingDays++;
+                }
+            }
+            return workingDays;
+        }
+
+        function updateDailyEarnings() {
+            let currentMonth = new Date().getMonth(); // Current month (0-indexed)
+            let currentYear = new Date().getFullYear();
+            let workingDays = getWorkingDaysInMonth(currentMonth, currentYear);
+            let dailyEarnings = totalYearlyEarnings / workingDays;
+
+            // Calculate money earned per second
+            moneyPerSecond = dailyEarnings / secondsPerDay;
+        }
+
+        function startTimer() {
+            updateDailyEarnings(); // Update earnings at the start
+            if (!running) {
+                running = true;
+                startTime = Date.now();
+                timerInterval = setInterval(updateTimer, 1000); // Update every second
+            }
+        }
+
+        function stopTimer() {
+            if (running) {
+                running = false;
+                clearInterval(timerInterval);
+            }
+        }
+
+        function resetTimer() {
+            running = false;
+            earnedMoney = 0;
+            document.getElementById("earnings").innerText = "Earned: €0.00";
+            clearInterval(timerInterval);
+        }
+
+        function updateTimer() {
+            let elapsedTime = (Date.now() - startTime) / 1000; // Elapsed time in seconds
+            earnedMoney = elapsedTime * moneyPerSecond;
+            document.getElementById("earnings").innerText = `Earned: €${earnedMoney.toFixed(2)}`;
+        }
+    </script>
+</body>
+</html>
